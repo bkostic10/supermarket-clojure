@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite failures="0" time="0.009" errors="0" skipped="0" tests="1" name="org.branimirkostic.supermarketsimulation.AppTest">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="sun.boot.library.path" value="C:\Program Files (x86)\Java\jdk1.6.0_25\jre\bin"/>
+    <property name="java.vm.version" value="20.0-b11"/>
+    <property name="java.vm.vendor" value="Sun Microsystems Inc."/>
+    <property name="java.vendor.url" value="http://java.sun.com/"/>
+    <property name="path.separator" value=";"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) Client VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value="Service Pack 1"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="C:\cygwin\home\Baxter\Maven\supermarketsimulation"/>
+    <property name="java.runtime.version" value="1.6.0_25-b06"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment"/>
+    <property name="basedir" value="C:\cygwin\home\Baxter\Maven\supermarketsimulation"/>
+    <property name="java.endorsed.dirs" value="C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\endorsed"/>
+    <property name="os.arch" value="x86"/>
+    <property name="surefire.real.class.path" value="C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\surefire\surefirebooter512261226346551227.jar"/>
+    <property name="java.io.tmpdir" value="C:\cygwin\tmp\"/>
+    <property name="line.separator" value="
+"/>
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc."/>
+    <property name="user.variant" value=""/>
+    <property name="os.name" value="Windows 7"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files (x86)\Java\jdk1.6.0_25\jre\bin;.;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\cygwin\usr\local\bin;C:\cygwin\bin;C:\Program Files (x86)\AMD APP\bin\x86_64;C:\Program Files (x86)\AMD APP\bin\x86;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Program Files (x86)\ATI Technologies\ATI.ACE\Core-Static;C:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn;C:\Program Files\Microsoft SQL Server\100\Tools\Binn;C:\Program Files\Microsoft SQL Server\100\DTS\Binn;C:\Program Files (x86)\Microsoft SQL Server\100\Tools\Binn\VSShell\Common7\IDE;C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\IDE\PrivateAssemblies;C:\Program Files (x86)\Microsoft SQL Server\100\DTS\Binn;C:\Program Files\Apache Software Foundation\apache-maven-3.0.3\bin;C:\Program Files (x86)\Java\jdk1.6.0_25\bin;C:\Program Files (x86)\Mercurial"/>
+    <property name="surefire.test.class.path" value="C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\test-classes;C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\classes;C:\Users\Baxter\.m2\repository\junit\junit\3.8.1\junit-3.8.1.jar;C:\Users\Baxter\.m2\repository\org\clojure\clojure\1.2.0\clojure-1.2.0.jar;C:\Users\Baxter\.m2\repository\org\clojure\clojure-contrib\1.2.0\clojure-contrib-1.2.0.jar;C:\Users\Baxter\.m2\repository\jline\jline\0.9.94\jline-0.9.94.jar;"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="50.0"/>
+    <property name="sun.management.compiler" value="HotSpot Client Compiler"/>
+    <property name="os.version" value="6.1"/>
+    <property name="user.home" value="C:\Users\Baxter"/>
+    <property name="user.timezone" value=""/>
+    <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob"/>
+    <property name="java.specification.version" value="1.6"/>
+    <property name="file.encoding" value="Cp1252"/>
+    <property name="user.name" value="Baxter"/>
+    <property name="java.class.path" value="C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\test-classes;C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\classes;C:\Users\Baxter\.m2\repository\junit\junit\3.8.1\junit-3.8.1.jar;C:\Users\Baxter\.m2\repository\org\clojure\clojure\1.2.0\clojure-1.2.0.jar;C:\Users\Baxter\.m2\repository\org\clojure\clojure-contrib\1.2.0\clojure-contrib-1.2.0.jar;C:\Users\Baxter\.m2\repository\jline\jline\0.9.94\jline-0.9.94.jar;"/>
+    <property name="java.vm.specification.version" value="1.0"/>
+    <property name="sun.arch.data.model" value="32"/>
+    <property name="java.home" value="C:\Program Files (x86)\Java\jdk1.6.0_25\jre"/>
+    <property name="sun.java.command" value="C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\surefire\surefirebooter512261226346551227.jar C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\surefire\surefire8359097868885336592tmp C:\cygwin\home\Baxter\Maven\supermarketsimulation\target\surefire\surefire6491420346606454660tmp"/>
+    <property name="java.specification.vendor" value="Sun Microsystems Inc."/>
+    <property name="user.language" value="en"/>
+    <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.version" value="1.6.0_25"/>
+    <property name="java.ext.dirs" value="C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\ext;C:\Windows\Sun\Java\lib\ext"/>
+    <property name="sun.boot.class.path" value="C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\resources.jar;C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\rt.jar;C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\sunrsasign.jar;C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\jsse.jar;C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\jce.jar;C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\charsets.jar;C:\Program Files (x86)\Java\jdk1.6.0_25\jre\lib\modules\jdk.boot.jar;C:\Program Files (x86)\Java\jdk1.6.0_25\jre\classes"/>
+    <property name="java.vendor" value="Sun Microsystems Inc."/>
+    <property name="localRepository" value="C:\Users\Baxter\.m2\repository"/>
+    <property name="file.separator" value="\"/>
+    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="sun.desktop" value="windows"/>
+    <property name="sun.cpu.isalist" value="pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86"/>
+  </properties>
+  <testcase time="0.001" classname="org.branimirkostic.supermarketsimulation.AppTest" name="testApp"/>
+</testsuite>
