@@ -11,14 +11,14 @@
 (def close-button (JButton. "Close"))
 (def dispose-button (JButton. "Dispose"))
 (def customers-label (JLabel. "Customers:  0"))
-(def entrance-label (JLabel. "  Entrance1:     "))
-(def entrance-label2 (JLabel. "  Entrance2:     "))
-(def entrance-label3 (JLabel. "  Entrance3:     "))
-(def register-label (JLabel. "Register1: "))
-(def register-label2 (JLabel. "Register2: "))
-(def register-label3 (JLabel. "Register3: "))
-(def register-label4 (JLabel. "Register4: "))
-(def register-label5 (JLabel. "Register5: "))
+(def entrance-label (JLabel. "  Entrance1:   "))
+(def entrance-label2 (JLabel. "  Entrance2:   "))
+(def entrance-label3 (JLabel. "  Entrance3:   "))
+(def register-label (JLabel. " Register1: "))
+(def register-label2 (JLabel. " Register2: "))
+(def register-label3 (JLabel. " Register3: "))
+(def register-label4 (JLabel. " Register4: "))
+(def register-label5 (JLabel. " Register5: "))
 (def register-textarea (JTextArea.))
 (.setEnabled register-textarea false)
 (def register-textarea2 (JTextArea.))
@@ -42,6 +42,7 @@
   (.add register-label3)
   (.add register-label4)
   (.add register-label5)))
+
 (def rows-panel (doto (JPanel.)
   (.setLayout (GridLayout. 1 5))
   (.add register-textarea-scroll)
@@ -49,6 +50,7 @@
   (.add register-textarea-scroll3)
   (.add register-textarea-scroll4)
   (.add register-textarea-scroll5)))
+
 (def north-panel (doto (JPanel.)
   (.add open-button)
   (.add close-button)
@@ -59,10 +61,12 @@
   (.add entrance-label)
   (.add entrance-label2)
   (.add entrance-label3)))
+
 (def center-panel (doto (JPanel.)
   (.setLayout (BorderLayout.))
   (.add regs-panel "North")
   (.add rows-panel "Center")))
+
 (def frame (JFrame. "Supermarket"))
   (.add frame north-panel "North")
   (.add frame west-panel "West")
@@ -83,14 +87,21 @@
 
 (defn customer-in [] (dosync(ref-set customer-no (inc @customer-no))))
 
+(defn random-entrance [random-no]
+  (cond
+    (= random-no 0) entrance-label
+    (= random-no 1) entrance-label2
+    (= random-no 2) entrance-label3))
+
 (defn run-entrance []
   (loop [i 0]
     (when (= @works true)
+      (def entrance-x (rand-int 3))
       (Thread/sleep (rand max-entrance-time))
       (customer-in)
       (agent (struct-map customer :id @customer-no :max-shopping-time (rand max-shopping-time)))
-      (println (str "Customers: " @customer-no))
       (.setText customers-label (str "Customers: " @customer-no))
+      (.setText (random-entrance entrance-x) (str "  Entrance" (inc entrance-x) ": " @customer-no " "))
       (recur i))))
 
 (defn open []
@@ -105,18 +116,16 @@
         (actionPerformed [evt]
                          (dosync(open))
                          (pcalls run-entrance)
+                         ;(.start (Thread. #(run-entrance)))
                          (.setEnabled open-button false)
                          (.setEnabled close-button true)
-                         ;(.start (Thread. #(run-entrance)))
                          )))
 (.addActionListener close-button
       (proxy [ActionListener] []
         (actionPerformed [evt]
           (dosync(close))
-          (println "Stopped")
           (.setEnabled open-button true)
           (.setEnabled close-button false)
-          ;(.setText register-textarea2 "")
           )))
 (.addActionListener dispose-button
       (proxy [ActionListener] []
