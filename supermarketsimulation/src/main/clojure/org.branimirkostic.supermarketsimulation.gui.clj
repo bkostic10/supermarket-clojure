@@ -88,11 +88,11 @@
 (def max-shopping-time 40000)
 
 ;row for every register
-(def register-row-1 (ref '()))
-(def register-row-2 (ref '()))
-(def register-row-3 (ref '()))
-(def register-row-4 (ref '()))
-(def register-row-5 (ref '()))
+(def register-row-1 (ref []))
+(def register-row-2 (ref []))
+(def register-row-3 (ref []))
+(def register-row-4 (ref []))
+(def register-row-5 (ref []))
 
 ;customer
 (defstruct customer :id :max-shopping-time)
@@ -118,7 +118,9 @@
 (defn go-to-register [customer row]
 	((Thread/sleep (customer :max-shopping-time))
    (.setText (get (random-row row) 0) (str (.getText (get (random-row row) 0)) "\n" (customer :id)))
-   (println (str "na kasi" customer))))
+   (dosync(ref-set (get (random-row row) 1) (conj @(get (random-row row) 1) (customer :id))))
+   (println (get (random-row row) 1))
+   (println (str "Row entry" customer))))
 
 (defn run-entrance "creating a customer who enters the supermarket" []
   (loop [i 0]
@@ -126,11 +128,11 @@
       (def entrance-x (rand-int 3))
       (Thread/sleep (rand max-entrance-time))
       (customer-in)
-      (def a(agent {:id @customer-no :max-shopping-time (rand max-shopping-time)}))
-      (pvalues (go-to-register @a (rand-int 5)))
+      (def customer (agent {:id @customer-no :max-shopping-time (rand max-shopping-time)}))
+      (pvalues (go-to-register @customer (rand-int 5)))
       (.setText customers-label (str "Customers: " @customer-no))
       (.setText (random-entrance entrance-x) (str "  Entrance" (inc entrance-x) ": " @customer-no " "))
-      (println "Usao kupac" @a)
+      (println "Supermarket entry" @customer)
       (recur i))))
 
 (defn open []
