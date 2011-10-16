@@ -40,7 +40,7 @@
 (def txt-label-1 (JLabel. "Max entrance period (s): "))
 (def txt-label-2 (JLabel. "Max shopping period (s): "))
 (def txt-1 (JTextField. "5" 10))
-(def txt-2 (JTextField. "5" 10))
+(def txt-2 (JTextField. "35" 10))
 
 (def regs-panel (doto(JPanel.)
   (.setLayout (GridLayout. 1 5))
@@ -171,7 +171,6 @@
                 (str "Register" (get (register-of-the-row row) 1) ": " ((get (@row :customer) 0) :id) " "))
       (.setText (get (register-of-the-row row) 2) (write-string (subvec (@row :customer) 1)))
       (Thread/sleep  ((get (@row :customer) 0) :max-paying-time))
-      (println (str "Payed" (get (@row :customer) 0)))
       (.setText (get (register-of-the-row row) 0)
                 (str " Register" (get (register-of-the-row row) 1) ": "))
       (iu-map-key row :free true)
@@ -185,9 +184,7 @@
    (.setText (get (random-row row) 0) (str (.getText (get (random-row row) 0)) "\n" (customer :id)))
    ;(dosync(ref-set (get (random-row row) 1) (conj @(get (random-row row) 1) customer)))
    (iu-map-key (get (random-row row) 1) :customer (conj (@(get (random-row row) 1) :customer) customer))
-   (pvalues (go-to-register (get (random-row row) 1)))
-   (println (get (random-row row) 1))
-   (println (str "Row entry" customer))))
+   (pvalues (go-to-register (get (random-row row) 1)))))
 
 (defn run-entrance "creating a customer who enters the supermarket" []
   (loop [i 0]
@@ -201,7 +198,6 @@
       (pvalues (enter-row @customer (rand-int 5)))
       (.setText customers-label (str "Customers: " @customer-no))
       (.setText (random-entrance entrance-x) (str "  Entrance" (inc entrance-x) ": " @customer-id " "))
-      (println (str "Supermarket entry" @customer))
       (recur i))))
 
 (defn open "fn that opens the supermarket" []

@@ -54,7 +54,7 @@
         <artifactId>clojure-maven-plugin</artifactId>
         <version>1.3.8</version>
         <configuration>
-      <replScript>target/classes/org.branimirkostic.supermarketsimulation.gui.clj</replScript>
+      <replScript>target/classes/org.branimirkostic.supermarketsimulation.clj</replScript>
         </configuration>
       </plugin>
     </plugins>
