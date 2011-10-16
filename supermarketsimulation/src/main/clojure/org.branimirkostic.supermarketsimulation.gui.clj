@@ -7,6 +7,8 @@
         '(java.awt Color))
 
 ;----------------------Form Components------------------------------
+;form has been done by the mix of technics from sites: http://clojure.org/jvm_hosted and
+;http://stuartsierra.com/2010/01/02/first-steps-with-clojure-swing
 
 (def open-button (JButton. "Open"))
 (def close-button (JButton. "Close"))
@@ -72,11 +74,12 @@
   (.add frame north-panel "North")
   (.add frame west-panel "West")
   (.add frame center-panel "Center")
-  (.setBounds frame 200 200 500 200)
+  (.setBounds frame 200 200 700 300)
   (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
   (.setEnabled close-button false)
 
 ;------------------Functions and defs-----------------------------
+;all basics are from the book: Practical Clojure
 
 ;id of the last entered customers
 (def customer-id (ref 0))
@@ -136,21 +139,14 @@
     (= random-no register-row-4) [register-label4 4 register-textarea4]
     (= random-no register-row-5) [register-label5 5 register-textarea5]))
 
-(defn write-string
+(defn write-string "returns a string from the vector"
   ([vector-x] (write-string vector-x 0 ""))
   ([vector-x i st]
     (if (= (get vector-x i) nil)
       st
       (recur vector-x (inc i) (str st "\n" ((get vector-x i) :id))))))
 
-(defn write-string-2
-  ([vector-x] (write-string vector-x 0 ""))
-  ([vector-x i st]
-    (if (= (get vector-x i) nil)
-      st
-      (recur vector-x (inc i) (str st "\n" ((get vector-x i) :id)) ))))
-
-(defn go-to-register [row]
+(defn go-to-register "customer is on a register" [row]
   (loop [i 0]
     (when (and (= (row :free) true) (not (= (get (@row :customer) 0) nil)))
       (iu-map-key row :free false)
@@ -160,14 +156,14 @@
       (Thread/sleep  ((get (@row :customer) 0) :max-paying-time))
       (println (str "Payed" (get (@row :customer) 0)))
       (.setText (get (register-of-the-row row) 0)
-                (str "Register" (get (register-of-the-row row) 1) ": "))
+                (str " Register" (get (register-of-the-row row) 1) ": "))
       (iu-map-key row :free true)
       (iu-map-key row :customer (subvec (@row :customer) 1))
       (customer-out)
       (.setText customers-label (str "Customers: " @customer-no))
       (recur i))))
 
-(defn enter-row [customer row]
+(defn enter-row "customer is entering a row" [customer row]
 	((Thread/sleep (customer :max-shopping-time))
    (.setText (get (random-row row) 0) (str (.getText (get (random-row row) 0)) "\n" (customer :id)))
    ;(dosync(ref-set (get (random-row row) 1) (conj @(get (random-row row) 1) customer)))
@@ -175,8 +171,6 @@
    (pvalues (go-to-register (get (random-row row) 1)))
    (println (get (random-row row) 1))
    (println (str "Row entry" customer))))
-
-
 
 (defn run-entrance "creating a customer who enters the supermarket" []
   (loop [i 0]
@@ -193,12 +187,29 @@
       (println (str "Supermarket entry" @customer))
       (recur i))))
 
-(defn open "Fn that opens the supermarket" []
+(defn open "fn that opens the supermarket" []
   (ref-set works true))
-(defn close "Fn that closes the supermarket" []
+(defn close "fn that closes the supermarket" []
   (ref-set works false))
 
+(defn reset []
+  (Thread/sleep 3000))
+
+(defn reset-customer-no []
+  (ref-set customer-no 0))
+
+(defn reset-customer-id []
+  (ref-set customer-id 0))
+
+;taken from https://github.com/clojure/clojure/blob/553f4879cad019dd9dc1727165d8a41c216bd086/src/clj/clojure/repl.clj#L270
+(defn thread-stopper
+  "Returns a function that takes one arg and uses that as an exception message
+  to stop the given thread.  Defaults to the current thread"
+  ([] (thread-stopper (Thread/currentThread)))
+  ([thread] (fn [msg] (.stop thread (Error. msg)))))
+
 ;----------------------Action Listeners------------------------------
+;action listeners have been done by the technics from site: http://clojure.org/jvm_hosted
 
 (.addActionListener open-button
       (proxy [ActionListener] []
@@ -212,31 +223,60 @@
                          (.setBackground west-panel Color/GREEN)
                          (.setBackground north-panel Color/GREEN)
                          (.setBackground regs-panel Color/GREEN)
-                         (.setBackground rows-panel Color/GREEN)
-                         )))
+                         (.setBackground rows-panel Color/GREEN))))
 (.addActionListener close-button
       (proxy [ActionListener] []
         (actionPerformed [evt]
-          (dosync(close))
-          (.setEnabled open-button true)
-          (.setEnabled close-button false)
-          (.setEnabled dispose-button true)
-          (.setBackground west-panel Color/YELLOW)
-          (.setBackground north-panel Color/YELLOW)
-          (.setBackground regs-panel Color/YELLOW)
-          (.setBackground rows-panel Color/YELLOW)
-          )))
+                         (dosync(close))
+                         (.setEnabled open-button true)
+                         (.setEnabled close-button false)
+                         (.setEnabled dispose-button true)
+                         (.setBackground west-panel Color/YELLOW)
+                         (.setBackground north-panel Color/YELLOW)
+                         (.setBackground regs-panel Color/YELLOW)
+                         (.setBackground rows-panel Color/YELLOW))))
 (.addActionListener dispose-button
       (proxy [ActionListener] []
         (actionPerformed [evt]
-            (System/exit 0)
-          )))
+                         (reset)
+                         (thread-stopper (Thread/currentThread))
+                         (dosync(close))
+                         (dosync(reset-customer-no))
+                         (dosync(reset-customer-id))
+                         (.setText customers-label "Customers:  0")
+                         (.setText entrance-label "  Entrance1:  ")
+                         (.setText entrance-label2 "  Entrance2:  ")
+                         (.setText entrance-label3 "  Entrance3:  ")
+                         (.setText register-label " Register1: ")
+                         (.setText register-label2 " Register2: ")
+                         (.setText register-label3 " Register3: ")
+                         (.setText register-label4 " Register4: ")
+                         (.setText register-label5 " Register5: ")
+                         (.setText register-textarea "")
+                         (.setText register-textarea2 "")
+                         (.setText register-textarea3 "")
+                         (.setText register-textarea4 "")
+                         (.setText register-textarea5 "")
+                         (iu-map-key register-row-1 :free true)
+                         (iu-map-key register-row-1 :customer [])
+                         (iu-map-key register-row-2 :free true)
+                         (iu-map-key register-row-2 :customer [])
+                         (iu-map-key register-row-3 :free true)
+                         (iu-map-key register-row-3 :customer [])
+                         (iu-map-key register-row-4 :free true)
+                         (iu-map-key register-row-4 :customer [])
+                         (iu-map-key register-row-5 :free true)
+                         (iu-map-key register-row-5 :customer [])
+                         (.setBackground west-panel Color/RED)
+                         (.setBackground north-panel Color/RED)
+                         (.setBackground regs-panel Color/RED)
+                         (.setBackground rows-panel Color/RED))))
 
 (defn run []
   (.setVisible frame true)
-  (.setBackground west-panel Color/YELLOW)
-  (.setBackground north-panel Color/YELLOW)
-  (.setBackground regs-panel Color/YELLOW)
-  (.setBackground rows-panel Color/YELLOW))
+  (.setBackground west-panel Color/RED)
+  (.setBackground north-panel Color/RED)
+  (.setBackground regs-panel Color/RED)
+  (.setBackground rows-panel Color/RED))
 
 (run)
