@@ -10,7 +10,7 @@
 
 (def open-button (JButton. "Open"))
 (def close-button (JButton. "Close"))
-(def dispose-button (JButton. "Dispose"))
+(def dispose-button (JButton. "Reset"))
 (def customers-label (JLabel. "Customers:  0"))
 (def entrance-label (JLabel. "  Entrance1:   "))
 (def entrance-label2 (JLabel. "  Entrance2:   "))
@@ -76,30 +76,43 @@
   (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
   (.setEnabled close-button false)
 
-;----------------------Functions---------------------------------
+;------------------Functions and defs-----------------------------
 
+;id of the last entered customers
+(def customer-id (ref 0))
 ;number of customers in the supermarket
 (def customer-no (ref 0))
 ;supermarket is working
 (def works (ref false))
 ;max time between two entrances
-(def max-entrance-time 15000)
+(def max-entrance-time 3000)
 ;max shopping time
-(def max-shopping-time 40000)
+(def max-shopping-time 3000)
+;max paying time
+(def max-paying-time 30000)
 
-;row for every register
-(def register-row-1 (ref []))
-(def register-row-2 (ref []))
-(def register-row-3 (ref []))
-(def register-row-4 (ref []))
-(def register-row-5 (ref []))
+;-------------
 
-;customer
-(defstruct customer :id :max-shopping-time)
+(defn iu-map-key "fn that changes the value of a key in a map" [map-x key-x value-x]
+  (dosync
+    (alter map-x assoc key-x value-x)))
 
-(defn customer-in "Increasing the number of customers" [] (dosync(ref-set customer-no (inc @customer-no))))
+;-------------
 
-(defn customer-out "Decreasing the number of customers" [] (dosync(ref-set customer-no (dec @customer-no))))
+;row of customers for every register
+(def register-row-1 (ref {:customer [] :free true}))
+(def register-row-2 (ref {:customer [] :free true}))
+(def register-row-3 (ref {:customer [] :free true}))
+(def register-row-4 (ref {:customer [] :free true}))
+(def register-row-5 (ref {:customer [] :free true}))
+
+(defn customer-in "Increasing the number of customers" []
+  (dosync
+    (ref-set customer-no (inc @customer-no))
+    (ref-set customer-id (inc @customer-id))))
+
+(defn customer-out "Decreasing the number of customers" []
+  (dosync(ref-set customer-no (dec @customer-no))))
 
 (defn random-entrance "Returns the entrance entered by customer" [random-no]
   (cond
@@ -115,12 +128,55 @@
     (= random-no 3) [register-textarea4 register-row-4]
     (= random-no 4) [register-textarea5 register-row-5]))
 
-(defn go-to-register [customer row]
+(defn register-of-the-row "Returns a register of the row" [random-no]
+  (cond
+    (= random-no register-row-1) [register-label 1 register-textarea]
+    (= random-no register-row-2) [register-label2 2 register-textarea2]
+    (= random-no register-row-3) [register-label3 3 register-textarea3]
+    (= random-no register-row-4) [register-label4 4 register-textarea4]
+    (= random-no register-row-5) [register-label5 5 register-textarea5]))
+
+(defn write-string
+  ([vector-x] (write-string vector-x 0 ""))
+  ([vector-x i st]
+    (if (= (get vector-x i) nil)
+      st
+      (recur vector-x (inc i) (str st "\n" ((get vector-x i) :id))))))
+
+(defn write-string-2
+  ([vector-x] (write-string vector-x 0 ""))
+  ([vector-x i st]
+    (if (= (get vector-x i) nil)
+      st
+      (recur vector-x (inc i) (str st "\n" ((get vector-x i) :id)) ))))
+
+(defn go-to-register [row]
+  (loop [i 0]
+    (when (and (= (row :free) true) (not (= (get (@row :customer) 0) nil)))
+      (iu-map-key row :free false)
+      (.setText (get (register-of-the-row row) 0)
+                (str "Register" (get (register-of-the-row row) 1) ": " ((get (@row :customer) 0) :id) " "))
+      (.setText (get (register-of-the-row row) 2) (write-string (subvec (@row :customer) 1)))
+      (Thread/sleep  ((get (@row :customer) 0) :max-paying-time))
+      (println (str "Payed" (get (@row :customer) 0)))
+      (.setText (get (register-of-the-row row) 0)
+                (str "Register" (get (register-of-the-row row) 1) ": "))
+      (iu-map-key row :free true)
+      (iu-map-key row :customer (subvec (@row :customer) 1))
+      (customer-out)
+      (.setText customers-label (str "Customers: " @customer-no))
+      (recur i))))
+
+(defn enter-row [customer row]
 	((Thread/sleep (customer :max-shopping-time))
    (.setText (get (random-row row) 0) (str (.getText (get (random-row row) 0)) "\n" (customer :id)))
-   (dosync(ref-set (get (random-row row) 1) (conj @(get (random-row row) 1) (customer :id))))
+   ;(dosync(ref-set (get (random-row row) 1) (conj @(get (random-row row) 1) customer)))
+   (iu-map-key (get (random-row row) 1) :customer (conj (@(get (random-row row) 1) :customer) customer))
+   (pvalues (go-to-register (get (random-row row) 1)))
    (println (get (random-row row) 1))
    (println (str "Row entry" customer))))
+
+
 
 (defn run-entrance "creating a customer who enters the supermarket" []
   (loop [i 0]
@@ -128,23 +184,19 @@
       (def entrance-x (rand-int 3))
       (Thread/sleep (rand max-entrance-time))
       (customer-in)
-      (def customer (agent {:id @customer-no :max-shopping-time (rand max-shopping-time)}))
-      (pvalues (go-to-register @customer (rand-int 5)))
+      (def customer (agent {:id @customer-id
+                            :max-shopping-time (rand max-shopping-time)
+                            :max-paying-time (rand max-paying-time)}))
+      (pvalues (enter-row @customer (rand-int 5)))
       (.setText customers-label (str "Customers: " @customer-no))
-      (.setText (random-entrance entrance-x) (str "  Entrance" (inc entrance-x) ": " @customer-no " "))
-      (println "Supermarket entry" @customer)
+      (.setText (random-entrance entrance-x) (str "  Entrance" (inc entrance-x) ": " @customer-id " "))
+      (println (str "Supermarket entry" @customer))
       (recur i))))
 
-(defn open []
+(defn open "Fn that opens the supermarket" []
   (ref-set works true))
-(defn close []
+(defn close "Fn that closes the supermarket" []
   (ref-set works false))
-
-(defn set-color [color]
-  ((.setBackground west-panel color)
-    (.setBackground north-panel color)
-    (.setBackground regs-panel color)
-    (.setBackground rows-panel color)))
 
 ;----------------------Action Listeners------------------------------
 
@@ -156,7 +208,11 @@
                          ;(.start (Thread. #(run-entrance)))
                          (.setEnabled open-button false)
                          (.setEnabled close-button true)
-                         ;(set-color Color/GREEN)
+                         (.setEnabled dispose-button false)
+                         (.setBackground west-panel Color/GREEN)
+                         (.setBackground north-panel Color/GREEN)
+                         (.setBackground regs-panel Color/GREEN)
+                         (.setBackground rows-panel Color/GREEN)
                          )))
 (.addActionListener close-button
       (proxy [ActionListener] []
@@ -164,7 +220,11 @@
           (dosync(close))
           (.setEnabled open-button true)
           (.setEnabled close-button false)
-          ;(set-color Color/RED)
+          (.setEnabled dispose-button true)
+          (.setBackground west-panel Color/YELLOW)
+          (.setBackground north-panel Color/YELLOW)
+          (.setBackground regs-panel Color/YELLOW)
+          (.setBackground rows-panel Color/YELLOW)
           )))
 (.addActionListener dispose-button
       (proxy [ActionListener] []
@@ -173,7 +233,10 @@
           )))
 
 (defn run []
-  (.setVisible frame true))
-  ;(set-color Color/RED))
+  (.setVisible frame true)
+  (.setBackground west-panel Color/YELLOW)
+  (.setBackground north-panel Color/YELLOW)
+  (.setBackground regs-panel Color/YELLOW)
+  (.setBackground rows-panel Color/YELLOW))
 
 (run)
