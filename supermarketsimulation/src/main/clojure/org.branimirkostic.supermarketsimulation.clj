@@ -1,4 +1,4 @@
-(ns org.branimirkostic.supermarketsimulation.gui)
+(ns org.branimirkostic.supermarketsimulation)
 
 
 (import '(javax.swing JFrame JPanel JLabel JTextArea JTextField JButton JScrollPane)
@@ -12,7 +12,6 @@
 
 (def open-button (JButton. "Open"))
 (def close-button (JButton. "Close"))
-(def dispose-button (JButton. "Reset"))
 (def customers-label (JLabel. "Customers:  0"))
 (def entrance-label (JLabel. "  Entrance1:   "))
 (def entrance-label2 (JLabel. "  Entrance2:   "))
@@ -38,6 +37,11 @@
 (def register-textarea-scroll4 (JScrollPane. register-textarea4 20 30))
 (def register-textarea-scroll5 (JScrollPane. register-textarea5 20 30))
 
+(def txt-label-1 (JLabel. "Max entrance period (s): "))
+(def txt-label-2 (JLabel. "Max shopping period (s): "))
+(def txt-1 (JTextField. "5" 10))
+(def txt-2 (JTextField. "5" 10))
+
 (def regs-panel (doto(JPanel.)
   (.setLayout (GridLayout. 1 5))
   (.add register-label)
@@ -54,11 +58,24 @@
   (.add register-textarea-scroll4)
   (.add register-textarea-scroll5)))
 
-(def north-panel (doto (JPanel.)
-  (.add open-button)
-  (.add close-button)
-  (.add dispose-button)
-  (.add customers-label)))
+(def north-panel-1
+  (doto (JPanel.)
+    (.add open-button)
+    (.add close-button)
+    (.add customers-label)))
+
+(def north-panel-2
+  (doto (JPanel.)
+    (.add txt-label-1)
+    (.add txt-1)
+    (.add txt-label-2)
+    (.add txt-2)))
+(def north-panel
+  (doto (JPanel.)
+    (.setLayout (BorderLayout.))
+    (.add north-panel-1 "North")
+    (.add north-panel-2 "South")))
+
 (def west-panel (doto (JPanel.)
   (.setLayout (GridLayout. 0 1))
   (.add entrance-label)
@@ -88,11 +105,11 @@
 ;supermarket is working
 (def works (ref false))
 ;max time between two entrances
-(def max-entrance-time 3000)
+(def max-entrance-time (ref (* 1000 (read-string (.getText txt-1)))))
 ;max shopping time
-(def max-shopping-time 3000)
+(def max-shopping-time (ref (* 1000 (read-string (.getText txt-2)))))
 ;max paying time
-(def max-paying-time 30000)
+(def max-paying-time (ref (* 200 (read-string (.getText txt-2)))))
 
 ;-------------
 
@@ -176,11 +193,11 @@
   (loop [i 0]
     (when (= @works true)
       (def entrance-x (rand-int 3))
-      (Thread/sleep (rand max-entrance-time))
+      (Thread/sleep (rand @max-entrance-time))
       (customer-in)
       (def customer (agent {:id @customer-id
-                            :max-shopping-time (rand max-shopping-time)
-                            :max-paying-time (rand max-paying-time)}))
+                            :max-shopping-time (rand @max-shopping-time)
+                            :max-paying-time (rand @max-paying-time)}))
       (pvalues (enter-row @customer (rand-int 5)))
       (.setText customers-label (str "Customers: " @customer-no))
       (.setText (random-entrance entrance-x) (str "  Entrance" (inc entrance-x) ": " @customer-id " "))
@@ -192,90 +209,47 @@
 (defn close "fn that closes the supermarket" []
   (ref-set works false))
 
-(defn reset []
-  (Thread/sleep 3000))
-
-(defn reset-customer-no []
-  (ref-set customer-no 0))
-
-(defn reset-customer-id []
-  (ref-set customer-id 0))
-
-;taken from https://github.com/clojure/clojure/blob/553f4879cad019dd9dc1727165d8a41c216bd086/src/clj/clojure/repl.clj#L270
-(defn thread-stopper
-  "Returns a function that takes one arg and uses that as an exception message
-  to stop the given thread.  Defaults to the current thread"
-  ([] (thread-stopper (Thread/currentThread)))
-  ([thread] (fn [msg] (.stop thread (Error. msg)))))
-
 ;----------------------Action Listeners------------------------------
 ;action listeners have been done by the technics from site: http://clojure.org/jvm_hosted
 
 (.addActionListener open-button
       (proxy [ActionListener] []
         (actionPerformed [evt]
-                         (dosync(open))
-                         (pcalls run-entrance)
-                         ;(.start (Thread. #(run-entrance)))
-                         (.setEnabled open-button false)
-                         (.setEnabled close-button true)
-                         (.setEnabled dispose-button false)
-                         (.setBackground west-panel Color/GREEN)
-                         (.setBackground north-panel Color/GREEN)
-                         (.setBackground regs-panel Color/GREEN)
-                         (.setBackground rows-panel Color/GREEN))))
+                         (if (and (number? (read-string (.getText txt-1))) (number? (read-string (.getText txt-2))))
+                         (do (dosync(open))
+                           (dosync (ref-set max-entrance-time (* 1000 (read-string (.getText txt-1)))))
+                           (dosync(ref-set max-shopping-time (* 1000 (read-string (.getText txt-2)))))
+                           (dosync(ref-set max-paying-time (* 600 (read-string (.getText txt-2)))))
+                           (pcalls run-entrance)
+                           ;(.start (Thread. #(run-entrance)))
+                           (.setEnabled open-button false)
+                           (.setEnabled close-button true)
+                           (.setBackground west-panel Color/GREEN)
+                           (.setBackground north-panel-1 Color/GREEN)
+                           (.setBackground north-panel-2 Color/GREEN)
+                           (.setBackground regs-panel Color/GREEN)
+                           (.setBackground rows-panel Color/GREEN)
+                           (.setEnabled txt-1 false)
+                           (.setEnabled txt-2 false))))))
 (.addActionListener close-button
       (proxy [ActionListener] []
         (actionPerformed [evt]
                          (dosync(close))
                          (.setEnabled open-button true)
                          (.setEnabled close-button false)
-                         (.setEnabled dispose-button true)
                          (.setBackground west-panel Color/YELLOW)
-                         (.setBackground north-panel Color/YELLOW)
+                         (.setBackground north-panel-1 Color/YELLOW)
+                         (.setBackground north-panel-2 Color/YELLOW)
                          (.setBackground regs-panel Color/YELLOW)
-                         (.setBackground rows-panel Color/YELLOW))))
-(.addActionListener dispose-button
-      (proxy [ActionListener] []
-        (actionPerformed [evt]
-                         (reset)
-                         (thread-stopper (Thread/currentThread))
-                         (dosync(close))
-                         (dosync(reset-customer-no))
-                         (dosync(reset-customer-id))
-                         (.setText customers-label "Customers:  0")
-                         (.setText entrance-label "  Entrance1:  ")
-                         (.setText entrance-label2 "  Entrance2:  ")
-                         (.setText entrance-label3 "  Entrance3:  ")
-                         (.setText register-label " Register1: ")
-                         (.setText register-label2 " Register2: ")
-                         (.setText register-label3 " Register3: ")
-                         (.setText register-label4 " Register4: ")
-                         (.setText register-label5 " Register5: ")
-                         (.setText register-textarea "")
-                         (.setText register-textarea2 "")
-                         (.setText register-textarea3 "")
-                         (.setText register-textarea4 "")
-                         (.setText register-textarea5 "")
-                         (iu-map-key register-row-1 :free true)
-                         (iu-map-key register-row-1 :customer [])
-                         (iu-map-key register-row-2 :free true)
-                         (iu-map-key register-row-2 :customer [])
-                         (iu-map-key register-row-3 :free true)
-                         (iu-map-key register-row-3 :customer [])
-                         (iu-map-key register-row-4 :free true)
-                         (iu-map-key register-row-4 :customer [])
-                         (iu-map-key register-row-5 :free true)
-                         (iu-map-key register-row-5 :customer [])
-                         (.setBackground west-panel Color/RED)
-                         (.setBackground north-panel Color/RED)
-                         (.setBackground regs-panel Color/RED)
-                         (.setBackground rows-panel Color/RED))))
+                         (.setBackground rows-panel Color/YELLOW)
+                         (.setEnabled txt-1 true)
+                         (.setEnabled txt-2 true))))
 
 (defn run []
   (.setVisible frame true)
   (.setBackground west-panel Color/RED)
-  (.setBackground north-panel Color/RED)
+  (.setBackground north-panel-1 Color/RED)
+  (.setBackground north-panel-2 Color/RED)
   (.setBackground regs-panel Color/RED)
   (.setBackground rows-panel Color/RED))
 
